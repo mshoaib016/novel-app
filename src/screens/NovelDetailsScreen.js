@@ -111,8 +111,7 @@ export default function NovelDetailsScreen({ navigation, route }) {
             label={progress && progress.percent > 0 ? t('continueReading') : t('read')}
             icon="book"
             onPress={handleRead}
-            fullWidth
-            style={{ flex: 1 }}
+            style={{ minWidth: 200 }}
           />
         </View>
         </FadeInView>
@@ -174,6 +173,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    justifyContent: 'center',
     paddingHorizontal: SPACING.lg,
     marginTop: SPACING.xl,
   },

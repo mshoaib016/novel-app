@@ -13,7 +13,7 @@ export const STRINGS = {
     settings: 'Settings',
 
     // home
-    appName: 'Urdu Novel Library',
+    appName: 'NovelSpot',
     searchPlaceholder: 'Search novels or authors…',
     continueReading: 'Continue Reading',
     featured: 'Featured',
@@ -154,7 +154,7 @@ export const STRINGS = {
     bookmarks: 'محفوظات',
     settings: 'ترتیبات',
 
-    appName: 'اردو ناول لائبریری',
+    appName: 'ناول اسپاٹ',
     searchPlaceholder: 'ناول یا مصنف تلاش کریں…',
     continueReading: 'مطالعہ جاری رکھیں',
     featured: 'نمایاں',

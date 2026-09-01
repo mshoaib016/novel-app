@@ -10,7 +10,7 @@
  *     { type: 'progress', page, total, percent }
  *     { type: 'error', message }
  *   RN -> WebView (webref.injectJavaScript):
- *     window.__renderPdf(base64, startPage)
+ *     window.__renderPdf(fileUrl, startPage)
  *     window.__apply({ theme, zoom, mode })
  *     window.__go(pageNumber)
  *     window.__step(+1 | -1)
@@ -99,13 +99,6 @@ export default function buildReaderHtml(pdfJsText, workerText, options = {}) {
     var real = Math.ceil(v / 2);
     var half = (v % 2 === 1) ? 'right' : 'left';
     return { real: real, half: half };
-  }
-
-  function base64ToUint8(b64) {
-    var raw = atob(b64);
-    var arr = new Uint8Array(raw.length);
-    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-    return arr;
   }
 
   function applyThemeStyles() {
@@ -263,10 +256,40 @@ export default function buildReaderHtml(pdfJsText, workerText, options = {}) {
     }, { passive: true });
   })();
 
+  // Loads a local file:// PDF as raw bytes via XHR (more reliable across
+  // WebView versions than fetch() for file:// URLs).
+  function loadFileBytes(url, onOk, onErr) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onload = function () {
+        if (xhr.status === 0 || xhr.status === 200) onOk(xhr.response);
+        else onErr('status ' + xhr.status);
+      };
+      xhr.onerror = function () { onErr('xhr error'); };
+      xhr.send();
+    } catch (e) {
+      onErr(e && e.message ? e.message : 'xhr threw');
+    }
+  }
+
   // ---- Public API called from React Native -------------------------------
-  window.__renderPdf = function (base64, startPage) {
+  // The "url" argument is a local file:// path to the PDF. The file is read
+  // directly off disk inside the WebView instead of being base64-encoded
+  // and pushed through the JS bridge — much faster and reliable for large
+  // scanned novels.
+  window.__renderPdf = function (url, startPage) {
     if (!pdfjsLib) { post({ type: 'error', message: 'pdfjs-missing' }); return; }
-    var task = pdfjsLib.getDocument({ data: base64ToUint8(base64) });
+    loadFileBytes(url, function (buf) {
+      renderFromBytes(new Uint8Array(buf), startPage);
+    }, function (err) {
+      post({ type: 'error', message: 'read: ' + err });
+    });
+  };
+
+  function renderFromBytes(bytes, startPage) {
+    var task = pdfjsLib.getDocument({ data: bytes });
     task.promise.then(function (doc) {
       state.doc = doc;
       document.getElementById('spinner').style.display = 'none';
@@ -286,7 +309,7 @@ export default function buildReaderHtml(pdfJsText, workerText, options = {}) {
     }).catch(function (e) {
       post({ type: 'error', message: 'open: ' + (e && e.message ? e.message : 'failed') });
     });
-  };
+  }
 
   window.__apply = function (opts) {
     var needRelayout = false;

@@ -11,7 +11,6 @@ import { Asset } from 'expo-asset';
  * whether the app is online or fully offline.
  */
 
-const base64Cache = {};
 const CACHE_DIR = FileSystem.cacheDirectory + 'novel-cache/';
 
 async function ensureCacheDir() {
@@ -42,16 +41,13 @@ async function resolveLocalUri(novel) {
 }
 
 /**
- * Returns the novel's PDF as a base64 string, ready to hand to the in-app
- * reader. Cached in memory for the lifetime of the app session.
+ * Returns a local file:// URI for the novel's PDF, ready for the in-app
+ * reader to open directly (pdf.js streams from this path instead of the
+ * whole file being converted to base64 and pushed through the JS bridge —
+ * much faster and reliable for large scanned novels).
  */
-export async function getNovelBase64(novel) {
-  if (base64Cache[novel.id]) return base64Cache[novel.id];
+export async function getNovelFileUri(novel) {
   const uri = await resolveLocalUri(novel);
   if (!uri) throw new Error('NOVEL_UNAVAILABLE');
-  const data = await FileSystem.readAsStringAsync(uri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-  base64Cache[novel.id] = data;
-  return data;
+  return uri;
 }

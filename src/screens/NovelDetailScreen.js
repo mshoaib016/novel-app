@@ -66,7 +66,7 @@ export default function NovelDetailScreen({ route, navigation }) {
   const onShare = async () => {
     try {
       await Share.share({
-        message: `Check out "${novel.title}" by ${novel.author} on Novel Reader!`,
+        message: `Check out "${novel.title}" by ${novel.author} on NovelSpot!`,
       });
     } catch (e) {}
   };

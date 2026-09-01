@@ -20,7 +20,7 @@ export default function AboutAppScreen({ navigation }) {
             <View style={[styles.logoBox, { backgroundColor: colors.primary }]}>
               <Ionicons name="book" size={32} color="#fff" />
             </View>
-            <Text style={[styles.appName, { color: colors.textPrimary }]}>Novel Reader</Text>
+            <Text style={[styles.appName, { color: colors.textPrimary }]}>NovelSpot</Text>
             <Text style={[styles.version, { color: colors.textSecondary }]}>
               Version {appJson.expo.version}
             </Text>
@@ -28,7 +28,7 @@ export default function AboutAppScreen({ navigation }) {
 
           <GlassCard style={styles.card}>
             <Text style={[styles.paragraph, { color: colors.textSecondary }]}>
-              Novel Reader is a clean, distraction-free app for reading Urdu novels — online or fully
+              NovelSpot is a clean, distraction-free app for reading Urdu novels — online or fully
               offline. Browse by category, save favourites, download novels for offline reading, and
               pick up exactly where you left off.
             </Text>

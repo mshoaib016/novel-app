@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Urdu Novel Library",
+    "name": "NovelSpot",
     "slug": "urdu-novel-library",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0E7C66"
+      "backgroundColor": "#12234A"
     },
     "assetBundlePatterns": [
       "assets/**/*"
@@ -24,7 +24,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0E7C66"
+        "backgroundColor": "#12234A"
       },
       "permissions": [
         "INTERNET",
@@ -32,13 +32,10 @@
       ]
     },
     "plugins": [
-      "expo-asset",
-      "expo-font"
+      "expo-asset"
     ],
     "extra": {
-      "eas": {
-        "projectId": "cc0286f1-7a6f-4306-8497-739d8e809cba"
-      }
+      "eas": {}
     }
   }
 }

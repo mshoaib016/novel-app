@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
+import { STRINGS } from '../i18n/strings';
 import novels, { CATEGORIES } from '../data/novels';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
@@ -42,7 +43,7 @@ export default function HomeScreen({ navigation }) {
             {t('appName')}
           </Text>
           <Text style={[styles.brand, { color: colors.text, textAlign: isRTL ? 'right' : 'left' }]}>
-            اردو ناول لائبریری
+            {STRINGS.ur.appName}
           </Text>
         </View>
         <Pressable

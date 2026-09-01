@@ -23,7 +23,7 @@ export default function PrivacyPolicyScreen({ navigation }) {
 
             <Text style={[styles.heading, { color: colors.textPrimary }]}>What we collect</Text>
             <Text style={[styles.paragraph, { color: colors.textSecondary }]}>
-              Novel Reader does not require an account, and does not collect
+              NovelSpot does not require an account, and does not collect
               or transmit any personal information. Any PDF files you add are
               stored on your own device.
             </Text>

@@ -97,7 +97,7 @@ export default function PdfReaderScreen({ route, navigation }) {
 
   const onShare = async () => {
     try {
-      await Share.share({ message: `I'm reading "${novel?.title}" on Novel Reader!` });
+      await Share.share({ message: `I'm reading "${novel?.title}" on NovelSpot!` });
     } catch (e) {}
   };
 

@@ -18,17 +18,14 @@
  * in their own mail app instead of it going through silently.
  */
 
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID'; // EDIT ME
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID'; // EDIT ME
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // EDIT ME
+const EMAILJS_SERVICE_ID = 'service_rf07cge';
+const EMAILJS_TEMPLATE_ID = 'template_tcehivf';
+const EMAILJS_PUBLIC_KEY = 'b5aFP_9nYeF-Q-6jt';
 
 // Where mailto: fallback messages go if EmailJS isn't configured yet.
-export const SUPPORT_EMAIL = 'support@urdunovellibrary.app'; // EDIT ME
+export const SUPPORT_EMAIL = 'novelspot.app@gmail.com';
 
-const isConfigured =
-  EMAILJS_SERVICE_ID !== 'YOUR_SERVICE_ID' &&
-  EMAILJS_TEMPLATE_ID !== 'YOUR_TEMPLATE_ID' &&
-  EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY';
+const isConfigured = true;
 
 /**
  * Sends { name, email, subject, message } to your inbox.
@@ -48,9 +45,9 @@ export async function sendFormEmail({ name, email, subject, message }) {
         template_id: EMAILJS_TEMPLATE_ID,
         user_id: EMAILJS_PUBLIC_KEY,
         template_params: {
-          from_name: name || 'App user',
-          from_email: email || 'not provided',
-          subject: subject || 'Novel Reader App',
+          name: name || 'App user',
+          email: email || 'not provided',
+          title: subject || 'NovelSpot',
           message: message || '',
         },
       }),

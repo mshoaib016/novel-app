@@ -19,7 +19,7 @@ export default function TermsScreen({ navigation }) {
 
             <Text style={[styles.heading, { color: colors.textPrimary }]}>Use of the App</Text>
             <Text style={[styles.paragraph, { color: colors.textSecondary }]}>
-              Novel Reader is provided for personal reading use. You may download novels for offline
+              NovelSpot is provided for personal reading use. You may download novels for offline
               reading on your own device.
             </Text>
 

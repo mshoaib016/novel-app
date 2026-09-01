@@ -32,7 +32,7 @@ export default function RateUsScreen({ navigation }) {
             <View style={styles.cardInner}>
               <Ionicons name="heart" size={36} color={colors.primary} style={{ marginBottom: 10 }} />
               <Text style={[styles.title, { color: colors.textPrimary }]}>
-                Enjoying Novel Reader?
+                Enjoying NovelSpot?
               </Text>
               <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
                 Tap a star and let us know how we're doing.

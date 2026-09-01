@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import novels from '../data/novels';
 import { useTheme } from '../context/ThemeContext';
@@ -12,7 +13,7 @@ import { useLibrary } from '../context/LibraryContext';
 
 import buildReaderHtml from '../reader/readerHtml';
 import { loadPdfEngine, looksInstalled } from '../reader/pdfjsAssets';
-import { getNovelBase64 } from '../utils/novelFile';
+import { getNovelFileUri } from '../utils/novelFile';
 import ReaderSettingsSheet from '../reader/ReaderSettingsSheet';
 import TextReader from '../reader/TextReader';
 import EmptyState from '../components/EmptyState';
@@ -22,10 +23,12 @@ import { formatPercent } from '../utils/format';
 
 const READER_BG = { light: '#FFFFFF', dark: '#0E0E0E', sepia: '#F4ECD8' };
 const READER_FG = { light: '#141414', dark: '#E8E2D6', sepia: '#5B4A32' };
+const READER_THEME_ORDER = ['light', 'dark', 'sepia'];
+const READER_THEME_ICON = { light: 'sunny-outline', dark: 'moon-outline', sepia: 'book-outline' };
 
 export default function ReaderScreen({ navigation, route }) {
   const { colors } = useTheme();
-  const { settings, t } = useSettings();
+  const { settings, setSetting, t } = useSettings();
   const {
     setReadingProgress,
     getProgress,
@@ -45,8 +48,8 @@ export default function ReaderScreen({ navigation, route }) {
   const engineReady = useRef(false);
 
   const [status, setStatus] = useState('loading'); // loading | ready | error | noEngine
-  const [html, setHtml] = useState(null);
-  const [base64, setBase64] = useState(null);
+  const [htmlUri, setHtmlUri] = useState(null);
+  const [pdfUri, setPdfUri] = useState(null);
   const [page, setPage] = useState(latest.current.page);
   const [total, setTotal] = useState(0);
   const [percent, setPercent] = useState(latest.current.percent);
@@ -103,15 +106,22 @@ export default function ReaderScreen({ navigation, route }) {
         }
         // The novel ships inside the app bundle, so this resolves instantly
         // whether the device is online or offline — no download step needed.
-        const data = await getNovelBase64(novel);
+        const fileUri = await getNovelFileUri(novel);
         if (!active) return;
         const doc = buildReaderHtml(engine.pdfJsText, engine.workerText, {
           theme: readerTheme,
           zoom,
           mode: settings.readingMode,
         });
-        setBase64(data);
-        setHtml(doc);
+        // Write the (small) HTML shell to disk and load the WebView from a
+        // file:// URI. This — combined with reading the PDF via XHR straight
+        // off disk (see readerHtml.js) — avoids ever pushing the multi-MB PDF
+        // through the JS bridge as a giant base64 string, which is what made
+        // large scanned novels slow to open or fail to open at all.
+        const htmlPath = `${FileSystem.cacheDirectory}reader_${novel.id}.html`;
+        await FileSystem.writeAsStringAsync(htmlPath, doc);
+        setPdfUri(fileUri);
+        setHtmlUri(htmlPath);
         setStatus('ready');
       } catch (e) {
         if (!active) return;
@@ -154,8 +164,9 @@ export default function ReaderScreen({ navigation, route }) {
       if (msg.type === 'ready') {
         engineReady.current = true;
         const start = savedProgress.current?.page || 1;
-        // Inject the PDF bytes and jump to the last read page.
-        webRef.current?.injectJavaScript(`window.__renderPdf("${base64}", ${start}); true;`);
+        // Point the WebView at the local PDF file path (short string) and
+        // jump to the last read page — no giant payload over the bridge.
+        webRef.current?.injectJavaScript(`window.__renderPdf(${JSON.stringify(pdfUri)}, ${start}); true;`);
       } else if (msg.type === 'loaded') {
         setTotal(msg.total);
         latest.current.total = msg.total;
@@ -168,7 +179,7 @@ export default function ReaderScreen({ navigation, route }) {
         setStatus('error');
       }
     },
-    [base64, persistProgress]
+    [pdfUri, persistProgress]
   );
 
   const step = (dir) => webRef.current?.injectJavaScript(`window.__step(${dir}); true;`);
@@ -176,6 +187,12 @@ export default function ReaderScreen({ navigation, route }) {
   const zoomBy = useCallback((delta) => {
     setZoom((z) => Math.max(0.6, Math.min(2.6, Math.round((z + delta) * 10) / 10)));
   }, []);
+
+  const cycleReaderTheme = useCallback(() => {
+    const idx = READER_THEME_ORDER.indexOf(readerTheme);
+    const next = READER_THEME_ORDER[(idx + 1) % READER_THEME_ORDER.length];
+    setSetting('readerTheme', next);
+  }, [readerTheme, setSetting]);
 
   const onTextProgress = useCallback(
     (pct) => {
@@ -239,6 +256,10 @@ export default function ReaderScreen({ navigation, route }) {
           <Pressable onPress={() => zoomBy(0.2)} hitSlop={8} style={styles.navBtn}>
             <Ionicons name="add-circle-outline" size={22} color={fg} />
           </Pressable>
+          <View style={[styles.sep, { backgroundColor: 'rgba(128,128,128,0.25)' }]} />
+          <Pressable onPress={cycleReaderTheme} hitSlop={8} style={styles.navBtn}>
+            <Ionicons name={READER_THEME_ICON[readerTheme]} size={22} color={fg} />
+          </Pressable>
         </>
       ) : null}
     </View>
@@ -287,11 +308,12 @@ export default function ReaderScreen({ navigation, route }) {
       <WebView
         ref={webRef}
         originWhitelist={['*']}
-        source={{ html }}
+        source={{ uri: htmlUri }}
         onMessage={onMessage}
         javaScriptEnabled
         domStorageEnabled
         allowFileAccess
+        allowFileAccessFromFileURLs
         allowUniversalAccessFromFileURLs
         mixedContentMode="always"
         androidLayerType={Platform.OS === 'android' ? 'hardware' : undefined}
